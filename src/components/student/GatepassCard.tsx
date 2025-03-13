@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -18,48 +17,33 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { GatepassProps } from "./GatepassCardProps";
 
-interface GatepassProps {
-  id: string;
-  studentName: string;
-  studentId: string;
-  reason: string;
-  destination: string;
-  dateOfLeaving: string;
-  timeOfLeaving: string;
-  expectedReturnDate: string;
-  expectedReturnTime: string;
-  status: "pending" | "approved" | "rejected";
-  approvedBy?: string;
-  approvedAt?: string;
-  rejectionReason?: string;
-  createdAt: any;
-}
-
-export const GatepassCard = ({
-  id,
-  studentName,
-  studentId,
-  reason,
-  destination,
-  dateOfLeaving,
-  timeOfLeaving,
-  expectedReturnDate,
-  expectedReturnTime,
-  status,
-  approvedBy,
-  approvedAt,
-  rejectionReason,
-  createdAt,
-}: GatepassProps) => {
+export const GatepassCard = ({ gatepass, detailed }: GatepassProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const {
+    id,
+    studentName,
+    studentId,
+    reason,
+    destination,
+    dateOfLeaving,
+    timeOfLeaving,
+    expectedReturnDate,
+    expectedReturnTime,
+    status,
+    approvedBy,
+    approvedAt,
+    rejectionReason,
+    createdAt,
+  } = gatepass;
 
   const getStatusColor = () => {
     switch (status) {

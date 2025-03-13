@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, DocumentData } from "firebase/firestore";
@@ -7,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { GatepassCard } from "@/components/student/GatepassCard";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -42,7 +41,7 @@ const GatepassDetail = () => {
           };
           
           // Verify user can access this gatepass
-          if (userData?.role === "student" && data.studentId !== currentUser?.uid) {
+          if (userData?.role === "student" && data.studentId && data.studentId !== currentUser?.uid) {
             toast({
               title: "Access denied",
               description: "You do not have permission to view this gate pass.",
@@ -122,7 +121,7 @@ const GatepassDetail = () => {
               </div>
             ) : gatepass ? (
               <div className="max-w-3xl mx-auto">
-                <GatepassCard gatepass={gatepass} detailed />
+                <GatepassCard gatepass={gatepass} detailed={true} />
               </div>
             ) : (
               <Card>
