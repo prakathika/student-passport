@@ -1,12 +1,24 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { collection, query, where, getDocs, orderBy, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  DocumentData,
+} from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { SlideUpTransition } from "@/components/layout/PageTransition";
 import { Clock, FileCheck, FilePenLine, FileX, Users } from "lucide-react";
 import { WardenRequestList } from "@/components/warden/WardenRequestList";
@@ -30,48 +42,48 @@ export const WardenDashboard = () => {
 
       try {
         setLoading(true);
-        
+
         // Fetch pending requests
         const pendingRef = collection(firestore, "gatepasses");
         const pendingQuery = query(
           pendingRef,
-          where("status", "==", "pending"),
-          orderBy("createdAt", "desc")
+          where("status", "==", "pending")
         );
-        
+
         const pendingSnapshot = await getDocs(pendingQuery);
         const requests: DocumentData[] = [];
-        
+
         pendingSnapshot.forEach((doc) => {
           requests.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        
+
         setPendingRequests(requests.slice(0, 5));
-        
+
         // Get stats for all requests
         const allRequestsRef = collection(firestore, "gatepasses");
         const allRequestsSnapshot = await getDocs(allRequestsRef);
         const allRequests: DocumentData[] = [];
-        
+
         allRequestsSnapshot.forEach((doc) => {
           allRequests.push(doc.data());
         });
-        
+
         // Get total number of students
         const studentsRef = collection(firestore, "students");
         const studentsSnapshot = await getDocs(studentsRef);
-        
+
         setStats({
           totalRequests: allRequests.length,
-          approved: allRequests.filter(req => req.status === "approved").length,
-          pending: allRequests.filter(req => req.status === "pending").length,
-          rejected: allRequests.filter(req => req.status === "rejected").length,
+          approved: allRequests.filter((req) => req.status === "approved")
+            .length,
+          pending: allRequests.filter((req) => req.status === "pending").length,
+          rejected: allRequests.filter((req) => req.status === "rejected")
+            .length,
           totalStudents: studentsSnapshot.size,
         });
-        
       } catch (error: any) {
         console.error("Error fetching requests:", error);
         toast({
@@ -91,7 +103,9 @@ export const WardenDashboard = () => {
     <SlideUpTransition>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Warden Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Warden Dashboard
+          </h1>
           <p className="text-muted-foreground mt-2">
             Welcome back, {userData?.displayName}
           </p>
@@ -169,7 +183,9 @@ export const WardenDashboard = () => {
 
         {/* Pending Requests */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Pending Gatepass Requests</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Pending Gatepass Requests
+          </h2>
           {loading ? (
             <div className="flex justify-center py-8">
               <Clock className="h-8 w-8 animate-spin text-primary" />

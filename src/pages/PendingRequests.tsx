@@ -1,9 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { firestore } from "@/lib/firebase";
-import { collection, query, where, orderBy, getDocs, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  DocumentData,
+} from "firebase/firestore";
 import { Header } from "@/components/layout/Header";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { WardenRequestList } from "@/components/warden/WardenRequestList";
@@ -36,22 +42,18 @@ const PendingRequests = () => {
       try {
         setIsLoading(true);
         const requestsRef = collection(firestore, "gatepasses");
-        const q = query(
-          requestsRef,
-          where("status", "==", "pending"),
-          orderBy("createdAt", "desc")
-        );
-        
+        const q = query(requestsRef, where("status", "==", "pending"));
+
         const querySnapshot = await getDocs(q);
         const requests: DocumentData[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           requests.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        
+
         setPendingRequests(requests);
       } catch (error: any) {
         console.error("Error fetching requests:", error);
@@ -82,7 +84,9 @@ const PendingRequests = () => {
           <div className="container mx-auto px-4">
             <div className="mb-6">
               <h1 className="text-2xl font-bold">Pending Gate Pass Requests</h1>
-              <p className="text-muted-foreground">Review and approve/reject student gate pass requests</p>
+              <p className="text-muted-foreground">
+                Review and approve/reject student gate pass requests
+              </p>
             </div>
 
             {isLoading ? (

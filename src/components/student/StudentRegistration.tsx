@@ -1,24 +1,20 @@
-
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { doc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { firestore, storage } from "@/lib/firebase";
+import { firestore } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -53,13 +49,10 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export const StudentRegistration = () => {
   const { currentUser, userData, updateUserData } = useAuth();
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check if user is already registered
+  // Redirect if profile is already complete
   useEffect(() => {
     if (userData?.isProfileComplete) {
       navigate("/dashboard");
@@ -82,63 +75,34 @@ export const StudentRegistration = () => {
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setProfileImage(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data: ProfileFormValues) => {
     if (!currentUser) return;
-    
+
     try {
-      setUploading(true);
-      
-      // Upload profile picture if selected
-      let photoURL = userData?.photoURL || null;
-      
-      if (profileImage) {
-        const imageRef = ref(storage, `profile_pictures/${currentUser.uid}`);
-        await uploadBytes(imageRef, profileImage);
-        photoURL = await getDownloadURL(imageRef);
-      }
-      
-      // Create student profile
+      // Create student profile data
       const studentData = {
         ...data,
-        photoURL,
         isProfileComplete: true,
         userId: currentUser.uid,
         email: currentUser.email,
         role: "student",
         createdAt: new Date().toISOString(),
       };
-      
-      // Save to students collection
+
+      // Save to Firestore
       await setDoc(doc(firestore, "students", currentUser.uid), studentData);
-      
-      // Update user profile
+
+      // Update user data in context
       await updateUserData({
         isProfileComplete: true,
-        photoURL,
       });
-      
+
       toast({
         title: "Profile complete!",
         description: "Your student profile has been created successfully.",
       });
-      
-      // Redirect to dashboard
+
       navigate("/dashboard");
-      
     } catch (error: any) {
       console.error("Profile creation error:", error);
       toast({
@@ -146,8 +110,6 @@ export const StudentRegistration = () => {
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -159,7 +121,9 @@ export const StudentRegistration = () => {
     <SlideUpTransition>
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Complete Your Profile</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Complete Your Profile
+          </h1>
           <p className="text-muted-foreground mt-2">
             Please provide your information to complete the registration.
           </p>
@@ -167,43 +131,8 @@ export const StudentRegistration = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Profile Picture */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary/20 mb-4">
-                {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Profile preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : userData?.photoURL ? (
-                  <img
-                    src={userData.photoURL}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
-                    No Image
-                  </div>
-                )}
-              </div>
-              <label htmlFor="profileImage" className="cursor-pointer">
-                <div className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  Upload profile picture
-                </div>
-                <input
-                  id="profileImage"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </label>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Information */}
+              {/* Full Name */}
               <FormField
                 control={form.control}
                 name="fullName"
@@ -218,6 +147,7 @@ export const StudentRegistration = () => {
                 )}
               />
 
+              {/* Enrollment Number */}
               <FormField
                 control={form.control}
                 name="enrollmentNumber"
@@ -232,6 +162,7 @@ export const StudentRegistration = () => {
                 )}
               />
 
+              {/* Course */}
               <FormField
                 control={form.control}
                 name="course"
@@ -262,6 +193,7 @@ export const StudentRegistration = () => {
                 )}
               />
 
+              {/* Semester */}
               <FormField
                 control={form.control}
                 name="semester"
@@ -278,14 +210,11 @@ export const StudentRegistration = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="1">1st Semester</SelectItem>
-                        <SelectItem value="2">2nd Semester</SelectItem>
-                        <SelectItem value="3">3rd Semester</SelectItem>
-                        <SelectItem value="4">4th Semester</SelectItem>
-                        <SelectItem value="5">5th Semester</SelectItem>
-                        <SelectItem value="6">6th Semester</SelectItem>
-                        <SelectItem value="7">7th Semester</SelectItem>
-                        <SelectItem value="8">8th Semester</SelectItem>
+                        {[...Array(8).keys()].map((i) => (
+                          <SelectItem key={i} value={`${i + 1}`}>
+                            {i + 1} Semester
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -293,36 +222,22 @@ export const StudentRegistration = () => {
                 )}
               />
 
-              {/* Hostel Information */}
+              {/* Hostel Block */}
               <FormField
                 control={form.control}
                 name="hostelBlock"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Hostel Block</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your hostel block" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="A">Block A</SelectItem>
-                        <SelectItem value="B">Block B</SelectItem>
-                        <SelectItem value="C">Block C</SelectItem>
-                        <SelectItem value="D">Block D</SelectItem>
-                        <SelectItem value="E">Block E</SelectItem>
-                        <SelectItem value="F">Block F</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="Hostel block" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* Room Number */}
               <FormField
                 control={form.control}
                 name="roomNumber"
@@ -330,58 +245,7 @@ export const StudentRegistration = () => {
                   <FormItem>
                     <FormLabel>Room Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="E.g., A-101" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Parent/Guardian Information */}
-              <FormField
-                control={form.control}
-                name="parentName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Parent/Guardian Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Parent/Guardian full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="parentContact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Parent/Guardian Contact</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="Parent/Guardian phone number"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="emergencyContact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Emergency Contact</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="Emergency contact number"
-                        {...field}
-                      />
+                      <Input placeholder="Room number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -389,31 +253,12 @@ export const StudentRegistration = () => {
               />
             </div>
 
-            {/* Permanent Address */}
-            <FormField
-              control={form.control}
-              name="permanentAddress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Permanent Address</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Your permanent residential address"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <Button
               type="submit"
-              className="w-full md:w-auto"
-              disabled={uploading}
+              className="w-full"
+              disabled={form.formState.isSubmitting}
             >
-              {uploading ? "Saving Profile..." : "Complete Registration"}
+              {form.formState.isSubmitting ? "Saving..." : "Save"}
             </Button>
           </form>
         </Form>
