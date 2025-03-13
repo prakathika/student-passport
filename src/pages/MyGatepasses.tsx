@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -23,19 +22,16 @@ const MyGatepasses = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is logged in
     if (!loading && !currentUser) {
       navigate("/login");
       return;
     }
 
-    // Check if user is a student
     if (!loading && userData && userData.role !== "student") {
       navigate("/dashboard");
       return;
     }
 
-    // Check if student profile is complete
     if (!loading && userData && userData.role === "student" && !userData.isProfileComplete) {
       navigate("/dashboard");
       return;

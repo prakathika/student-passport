@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -150,34 +149,33 @@ export const StudentDashboard = () => {
               <Clock className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : recentPasses.length > 0 ? (
-            <div className="space-y-4">
-              {recentPasses.map((pass) => (
-                <GatepassCard key={pass.id} gatepass={pass} />
-              ))}
-              <div className="text-center pt-4">
-                <Link to="/my-gatepasses">
-                  <Button variant="outline">View All Gate Passes</Button>
-                </Link>
-              </div>
+          <div className="space-y-4">
+            {recentPasses.map((pass) => (
+              <GatepassCard key={pass.id} gatepass={pass} />
+            ))}
+            <div className="text-center pt-4">
+              <Link to="/my-gatepasses">
+                <Button variant="outline">View All Gate Passes</Button>
+              </Link>
             </div>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-10">
-                <CalendarClock className="h-12 w-12 text-muted-foreground mb-4" />
-                <CardDescription className="text-center">
-                  You haven't requested any gate passes yet.
-                  <br />
-                  Create your first request to get started.
-                </CardDescription>
-                <CardFooter className="pt-6">
-                  <Link to="/request-gatepass">
-                    <Button>Request New Gate Pass</Button>
-                  </Link>
-                </CardFooter>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-10">
+              <CalendarClock className="h-12 w-12 text-muted-foreground mb-4" />
+              <CardDescription className="text-center">
+                You haven't requested any gate passes yet.
+                <br />
+                Create your first request to get started.
+              </CardDescription>
+              <CardFooter className="pt-6">
+                <Link to="/request-gatepass">
+                  <Button>Request New Gate Pass</Button>
+                </Link>
+              </CardFooter>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </SlideUpTransition>
   );
