@@ -1,15 +1,34 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { firestore } from "@/lib/firebase";
-import { collection, query, where, orderBy, getDocs, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  DocumentData,
+} from "firebase/firestore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { GatepassCard } from "@/components/student/GatepassCard";
 import { SlideUpTransition } from "@/components/layout/PageTransition";
 import { useToast } from "@/hooks/use-toast";
-import { CalendarClock, Clock, FilePenLine, FileCheck, FileX } from "lucide-react";
+import {
+  CalendarClock,
+  Clock,
+  FilePenLine,
+  FileCheck,
+  FileX,
+} from "lucide-react";
 
 export const StudentDashboard = () => {
   const { currentUser, userData } = useAuth();
@@ -30,33 +49,30 @@ export const StudentDashboard = () => {
       try {
         setLoading(true);
         const passesRef = collection(firestore, "gatepasses");
-        const q = query(
-          passesRef,
-          where("studentId", "==", currentUser.uid),
-          orderBy("createdAt", "desc")
-        );
-        
+        const q = query(passesRef, where("studentId", "==", currentUser.uid));
+
         const querySnapshot = await getDocs(q);
         const passes: DocumentData[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           passes.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        
+
         setRecentPasses(passes.slice(0, 5));
-        
+
         // Calculate stats
         const allPasses = passes;
         setStats({
           totalRequests: allPasses.length,
-          approved: allPasses.filter(pass => pass.status === "approved").length,
-          pending: allPasses.filter(pass => pass.status === "pending").length,
-          rejected: allPasses.filter(pass => pass.status === "rejected").length,
+          approved: allPasses.filter((pass) => pass.status === "approved")
+            .length,
+          pending: allPasses.filter((pass) => pass.status === "pending").length,
+          rejected: allPasses.filter((pass) => pass.status === "rejected")
+            .length,
         });
-        
       } catch (error: any) {
         console.error("Error fetching passes:", error);
         toast({
@@ -76,7 +92,9 @@ export const StudentDashboard = () => {
     <SlideUpTransition>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Student Dashboard
+          </h1>
           <p className="text-muted-foreground mt-2">
             Welcome back, {userData?.displayName}
           </p>

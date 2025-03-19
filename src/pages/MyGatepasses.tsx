@@ -2,13 +2,27 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { firestore } from "@/lib/firebase";
-import { collection, query, where, orderBy, getDocs, DocumentData } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  DocumentData,
+} from "firebase/firestore";
 import { Header } from "@/components/layout/Header";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { GatepassCard } from "@/components/student/GatepassCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { CalendarClock, Clock, FilterX, Check, X, CircleAlert } from "lucide-react";
+import {
+  CalendarClock,
+  Clock,
+  FilterX,
+  Check,
+  X,
+  CircleAlert,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -32,7 +46,12 @@ const MyGatepasses = () => {
       return;
     }
 
-    if (!loading && userData && userData.role === "student" && !userData.isProfileComplete) {
+    if (
+      !loading &&
+      userData &&
+      userData.role === "student" &&
+      !userData.isProfileComplete
+    ) {
       navigate("/dashboard");
       return;
     }
@@ -43,22 +62,18 @@ const MyGatepasses = () => {
       try {
         setIsLoading(true);
         const passesRef = collection(firestore, "gatepasses");
-        const q = query(
-          passesRef,
-          where("studentId", "==", currentUser.uid),
-          orderBy("createdAt", "desc")
-        );
-        
+        const q = query(passesRef, where("studentId", "==", currentUser.uid));
+
         const querySnapshot = await getDocs(q);
         const passes: DocumentData[] = [];
-        
+
         querySnapshot.forEach((doc) => {
           passes.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        
+
         setGatepasses(passes);
         setFilteredPasses(passes);
       } catch (error: any) {
@@ -80,11 +95,11 @@ const MyGatepasses = () => {
 
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
-    
+
     if (filter === "all") {
       setFilteredPasses(gatepasses);
     } else {
-      setFilteredPasses(gatepasses.filter(pass => pass.status === filter));
+      setFilteredPasses(gatepasses.filter((pass) => pass.status === filter));
     }
   };
 
@@ -101,7 +116,9 @@ const MyGatepasses = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                 <h1 className="text-2xl font-bold">My Gate Passes</h1>
-                <p className="text-muted-foreground">View all your gate pass requests</p>
+                <p className="text-muted-foreground">
+                  View all your gate pass requests
+                </p>
               </div>
               <Button
                 onClick={() => navigate("/request-gatepass")}
@@ -113,18 +130,30 @@ const MyGatepasses = () => {
 
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="mb-4">
-                <TabsTrigger value="all" onClick={() => handleFilterChange("all")}>
+                <TabsTrigger
+                  value="all"
+                  onClick={() => handleFilterChange("all")}
+                >
                   All
                 </TabsTrigger>
-                <TabsTrigger value="pending" onClick={() => handleFilterChange("pending")}>
+                <TabsTrigger
+                  value="pending"
+                  onClick={() => handleFilterChange("pending")}
+                >
                   <CircleAlert className="mr-1 h-4 w-4 text-amber-500" />
                   Pending
                 </TabsTrigger>
-                <TabsTrigger value="approved" onClick={() => handleFilterChange("approved")}>
+                <TabsTrigger
+                  value="approved"
+                  onClick={() => handleFilterChange("approved")}
+                >
                   <Check className="mr-1 h-4 w-4 text-green-500" />
                   Approved
                 </TabsTrigger>
-                <TabsTrigger value="rejected" onClick={() => handleFilterChange("rejected")}>
+                <TabsTrigger
+                  value="rejected"
+                  onClick={() => handleFilterChange("rejected")}
+                >
                   <X className="mr-1 h-4 w-4 text-red-500" />
                   Rejected
                 </TabsTrigger>
