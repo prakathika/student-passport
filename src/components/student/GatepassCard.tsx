@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { Check, X, Clock, Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +46,44 @@ export const GatepassCard = ({ gatepass, detailed }: GatepassProps) => {
     createdAt,
   } = gatepass;
 
+  const formatDate = (dateString: any) => {
+    if (!dateString) return "N/A";
+    
+    try {
+      const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
+      if (!isValid(date)) return "N/A";
+      return format(date, "MMM dd, yyyy");
+    } catch (error) {
+      console.error("Date formatting error:", error, dateString);
+      return "N/A";
+    }
+  };
+
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return "N/A";
+
+    try {
+      // Handle different timestamp formats
+      let date;
+      if (timestamp.seconds) {
+        // Firestore timestamp
+        date = new Date(timestamp.seconds * 1000);
+      } else if (typeof timestamp === 'string') {
+        // ISO string
+        date = parseISO(timestamp);
+      } else {
+        // Fallback to direct date
+        date = new Date(timestamp);
+      }
+
+      if (!isValid(date)) return "N/A";
+      return format(date, "PPP");
+    } catch (error) {
+      console.error("Date formatting error:", error, timestamp);
+      return "N/A";
+    }
+  };
+
   const getStatusColor = () => {
     switch (status) {
       case "approved":
@@ -68,6 +107,7 @@ export const GatepassCard = ({ gatepass, detailed }: GatepassProps) => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + "...";
   };
@@ -118,9 +158,9 @@ export const GatepassCard = ({ gatepass, detailed }: GatepassProps) => {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-lg">{destination}</CardTitle>
+              <CardTitle className="text-lg">{destination || "No destination"}</CardTitle>
               <CardDescription>
-                {format(new Date(createdAt?.toDate?.() || createdAt), "PPP")}
+                {formatTimestamp(createdAt)}
               </CardDescription>
             </div>
             <Badge 
@@ -137,19 +177,25 @@ export const GatepassCard = ({ gatepass, detailed }: GatepassProps) => {
             <div className="grid grid-cols-2 gap-x-4 text-sm">
               <div className="text-muted-foreground">Leaving:</div>
               <div className="font-medium">
-                {format(new Date(dateOfLeaving), "MMM dd, yyyy")} at {timeOfLeaving}
+                {formatDate(dateOfLeaving)} at {timeOfLeaving || "N/A"}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-x-4 text-sm">
               <div className="text-muted-foreground">Return:</div>
               <div className="font-medium">
-                {format(new Date(expectedReturnDate), "MMM dd, yyyy")} at {expectedReturnTime}
+                {formatDate(expectedReturnDate)} at {expectedReturnTime || "N/A"}
               </div>
             </div>
             <div className="pt-2">
               <p className="text-sm text-muted-foreground">Reason:</p>
-              <p className="text-sm">{truncateText(reason, 100)}</p>
+              <p className="text-sm">{truncateText(reason || "No reason provided", 100)}</p>
             </div>
+            {status === "rejected" && rejectionReason && (
+              <div className="pt-2">
+                <p className="text-sm text-muted-foreground">Rejection Reason:</p>
+                <p className="text-sm text-red-600">{truncateText(rejectionReason, 100)}</p>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, DocumentData } from "firebase/firestore";
@@ -121,7 +122,26 @@ const GatepassDetail = () => {
               </div>
             ) : gatepass ? (
               <div className="max-w-3xl mx-auto">
-                <GatepassCard gatepass={gatepass} detailed={true} />
+                <GatepassCard 
+                  gatepass={{
+                    id: gatepass.id,
+                    studentName: gatepass.studentName || "",
+                    studentId: gatepass.studentId || "",
+                    reason: gatepass.reason || "",
+                    destination: gatepass.destination || "",
+                    dateOfLeaving: gatepass.dateOfLeaving || gatepass.leaveDate || "",
+                    timeOfLeaving: gatepass.timeOfLeaving || "",
+                    expectedReturnDate: gatepass.expectedReturnDate || gatepass.returnDate || "",
+                    expectedReturnTime: gatepass.expectedReturnTime || "",
+                    status: gatepass.status || "pending",
+                    approvedBy: gatepass.approvedBy || "",
+                    approvedAt: gatepass.approvedAt || "",
+                    rejectionReason: gatepass.rejectionReason || "",
+                    createdAt: gatepass.createdAt,
+                    ...gatepass
+                  }}
+                  detailed={true} 
+                />
               </div>
             ) : (
               <Card>
