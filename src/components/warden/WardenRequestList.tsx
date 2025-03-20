@@ -41,18 +41,20 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
     try {
       setIsUpdating(true);
       const requestRef = doc(firestore, "gatepasses", requestId);
-      
+
       await updateDoc(requestRef, {
         status: "approved",
         approvedAt: new Date().toISOString(),
       });
-      
+
       toast({
         title: "Request approved",
         description: "The gatepass request has been approved successfully.",
       });
-      
-      navigate(0);
+
+      // Update the local state or refetch data
+      navigate("/"); // Refresh the page to show updated data
+
     } catch (error: any) {
       console.error("Error approving request:", error);
       toast({
@@ -75,23 +77,24 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
       });
       return;
     }
-    
+
     try {
       setIsUpdating(true);
       const requestRef = doc(firestore, "gatepasses", requestId);
-      
+
       await updateDoc(requestRef, {
         status: "rejected",
         rejectionReason: rejectReason,
         rejectedAt: new Date().toISOString(),
       });
-      
+
       toast({
         title: "Request rejected",
         description: "The gatepass request has been rejected.",
       });
-      
-      navigate(0);
+ // Update the local state or refetch data
+      navigate("/"); // Refresh the page to show updated data
+
     } catch (error: any) {
       console.error("Error rejecting request:", error);
       toast({
@@ -147,7 +150,11 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
       case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
       case "pending":
-        return <Badge variant="outline" className="text-amber-500 border-amber-500">Pending</Badge>;
+        return (
+          <Badge variant="outline" className="text-amber-500 border-amber-500">
+            Pending
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
@@ -172,6 +179,7 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
                 <div>
                   <CardTitle>{request.studentName || "Unknown Student"}</CardTitle>
                   <CardDescription>
+
                     {request.enrollmentNumber || "No ID"} | {request.hostelBlock || "?"}-{request.roomNumber || "?"}
                   </CardDescription>
                 </div>
@@ -186,6 +194,7 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Return Date</p>
+
                   <p className="font-medium">{formatDate(request.returnDate || request.expectedReturnDate)}</p>
                 </div>
                 <div>
@@ -193,6 +202,7 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
                   <p className="font-medium">{request.destination || "Not specified"}</p>
                 </div>
                 <div>
+
                   <p className="text-sm text-muted-foreground">Parent Contact</p>
                   <p className="font-medium">{request.parentContact || "Not provided"}</p>
                 </div>
@@ -252,7 +262,8 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
                 <DialogHeader>
                   <DialogTitle>Reject Gate Pass Request</DialogTitle>
                   <DialogDescription>
-                    Please provide a reason for rejecting this request. This will be visible to the student.
+                    Please provide a reason for rejecting this request. This
+                    will be visible to the student.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
