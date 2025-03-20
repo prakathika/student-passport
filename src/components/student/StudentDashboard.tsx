@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -118,44 +119,44 @@ export const StudentDashboard = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-indigo-100 to-indigo-50">
+            <CardHeader className="pb-2 bg-indigo-500 text-white">
+              <CardTitle className="text-sm font-medium">
                 Total Requests
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.totalRequests}</div>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-bold text-indigo-700">{stats.totalRequests}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-600">
+          <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-green-100 to-green-50">
+            <CardHeader className="pb-2 bg-green-500 text-white">
+              <CardTitle className="text-sm font-medium">
                 Approved
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.approved}</div>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-bold text-green-700">{stats.approved}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-amber-500">
+          <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-amber-100 to-amber-50">
+            <CardHeader className="pb-2 bg-amber-500 text-white">
+              <CardTitle className="text-sm font-medium">
                 Pending
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.pending}</div>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-bold text-amber-700">{stats.pending}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-red-500">
+          <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-red-100 to-red-50">
+            <CardHeader className="pb-2 bg-red-500 text-white">
+              <CardTitle className="text-sm font-medium">
                 Rejected
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.rejected}</div>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-bold text-red-700">{stats.rejected}</div>
             </CardContent>
           </Card>
         </div>
@@ -170,7 +171,26 @@ export const StudentDashboard = () => {
           ) : recentPasses.length > 0 ? (
             <div className="space-y-4">
               {recentPasses.map((pass) => (
-                <GatepassCard key={pass.id} gatepass={pass} />
+                <GatepassCard 
+                  key={pass.id} 
+                  gatepass={{
+                    id: pass.id,
+                    studentName: pass.studentName || "",
+                    studentId: pass.studentId || "",
+                    reason: pass.reason || "",
+                    destination: pass.destination || "",
+                    dateOfLeaving: pass.dateOfLeaving || pass.leaveDate || "",
+                    timeOfLeaving: pass.timeOfLeaving || "",
+                    expectedReturnDate: pass.expectedReturnDate || pass.returnDate || "",
+                    expectedReturnTime: pass.expectedReturnTime || "",
+                    status: pass.status || "pending",
+                    approvedBy: pass.approvedBy || "",
+                    approvedAt: pass.approvedAt || "",
+                    rejectionReason: pass.rejectionReason || "",
+                    createdAt: pass.createdAt,
+                    ...pass
+                  }} 
+                />
               ))}
               <div className="text-center pt-4">
                 <Link to="/my-gatepasses">

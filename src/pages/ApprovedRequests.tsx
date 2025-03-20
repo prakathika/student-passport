@@ -24,13 +24,11 @@ const ApprovedRequests = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is logged in
     if (!loading && !currentUser) {
       navigate("/login");
       return;
     }
 
-    // Check if user is a warden
     if (!loading && userData && userData.role !== "warden") {
       navigate("/dashboard");
       return;

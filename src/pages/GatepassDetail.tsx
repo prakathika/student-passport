@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, DocumentData } from "firebase/firestore";
@@ -35,13 +36,14 @@ const GatepassDetail = () => {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
+          const gatepassData = docSnap.data();
           const data = {
             id: docSnap.id,
-            ...docSnap.data()
+            ...gatepassData
           };
           
           // Verify user can access this gatepass
-          if (userData?.role === "student" && data.studentId && data.studentId !== currentUser?.uid) {
+          if (userData?.role === "student" && gatepassData.studentId && currentUser?.uid !== gatepassData.studentId) {
             toast({
               title: "Access denied",
               description: "You do not have permission to view this gate pass.",
@@ -67,6 +69,11 @@ const GatepassDetail = () => {
           description: error.message,
           variant: "destructive",
         });
+        
+        // If we get a NOT_FOUND error, navigate to home
+        if (error.code === "NOT_FOUND") {
+          navigate("/");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -121,7 +128,26 @@ const GatepassDetail = () => {
               </div>
             ) : gatepass ? (
               <div className="max-w-3xl mx-auto">
-                <GatepassCard gatepass={gatepass} detailed={true} />
+                <GatepassCard 
+                  gatepass={{
+                    id: gatepass.id,
+                    studentName: gatepass.studentName || "",
+                    studentId: gatepass.studentId || "",
+                    reason: gatepass.reason || "",
+                    destination: gatepass.destination || "",
+                    dateOfLeaving: gatepass.dateOfLeaving || gatepass.leaveDate || "",
+                    timeOfLeaving: gatepass.timeOfLeaving || "",
+                    expectedReturnDate: gatepass.expectedReturnDate || gatepass.returnDate || "",
+                    expectedReturnTime: gatepass.expectedReturnTime || "",
+                    status: gatepass.status || "pending",
+                    approvedBy: gatepass.approvedBy || "",
+                    approvedAt: gatepass.approvedAt || "",
+                    rejectionReason: gatepass.rejectionReason || "",
+                    createdAt: gatepass.createdAt,
+                    ...gatepass
+                  }}
+                  detailed={true} 
+                />
               </div>
             ) : (
               <Card>
