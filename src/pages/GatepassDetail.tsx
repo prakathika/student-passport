@@ -42,7 +42,7 @@ const GatepassDetail = () => {
           };
           
           // Verify user can access this gatepass
-          if (userData?.role === "student" && data.studentId && data.studentId !== currentUser?.uid) {
+          if (userData?.role === "student" && data.studentId && currentUser?.uid !== data.studentId) {
             toast({
               title: "Access denied",
               description: "You do not have permission to view this gate pass.",
