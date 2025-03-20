@@ -1,0 +1,4 @@
+
+# Redirect all requests to index.html (useful for SPAs)
+/*  /index.html  200
+
