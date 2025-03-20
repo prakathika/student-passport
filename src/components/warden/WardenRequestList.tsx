@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { CalendarClock, Check, X, Eye } from "lucide-react";
 
 interface WardenRequestListProps {
@@ -54,6 +54,7 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
 
       // Update the local state or refetch data
       navigate("/"); // Refresh the page to show updated data
+
     } catch (error: any) {
       console.error("Error approving request:", error);
       toast({
@@ -91,9 +92,9 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
         title: "Request rejected",
         description: "The gatepass request has been rejected.",
       });
-
-      // Update the local state or refetch data
+ // Update the local state or refetch data
       navigate("/"); // Refresh the page to show updated data
+
     } catch (error: any) {
       console.error("Error rejecting request:", error);
       toast({
@@ -108,19 +109,37 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return "N/A";
+
     try {
-      return format(new Date(timestamp), "PPP p");
+      let date;
+      if (timestamp.seconds) {
+        date = new Date(timestamp.seconds * 1000);
+      } else if (typeof timestamp === 'string') {
+        date = parseISO(timestamp);
+      } else {
+        date = new Date(timestamp);
+      }
+
+      if (!isValid(date)) return "N/A";
+      return format(date, "PPP p");
     } catch (error) {
-      return "Invalid date";
+      console.error("Date formatting error:", error, timestamp);
+      return "N/A";
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: any) => {
+    if (!dateString) return "N/A";
+
     try {
-      return format(new Date(dateString), "PPP");
+      const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
+      if (!isValid(date)) return "N/A";
+      return format(date, "MMM dd, yyyy");
     } catch (error) {
-      return "Invalid date";
+      console.error("Date formatting error:", error, dateString);
+      return "N/A";
     }
   };
 
@@ -158,10 +177,10 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle>{request.studentName}</CardTitle>
+                  <CardTitle>{request.studentName || "Unknown Student"}</CardTitle>
                   <CardDescription>
-                    {request.enrollmentNumber} | {request.hostelBlock}-
-                    {request.roomNumber}
+
+                    {request.enrollmentNumber || "No ID"} | {request.hostelBlock || "?"}-{request.roomNumber || "?"}
                   </CardDescription>
                 </div>
                 {getStatusBadge(request.status)}
@@ -171,31 +190,33 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Leave Date</p>
-                  <p className="font-medium">{formatDate(request.leaveDate)}</p>
+                  <p className="font-medium">{formatDate(request.leaveDate || request.dateOfLeaving)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Return Date</p>
-                  <p className="font-medium">
-                    {formatDate(request.returnDate)}
-                  </p>
+
+                  <p className="font-medium">{formatDate(request.returnDate || request.expectedReturnDate)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Destination</p>
-                  <p className="font-medium">{request.destination}</p>
+                  <p className="font-medium">{request.destination || "Not specified"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Parent Contact
-                  </p>
-                  <p className="font-medium">{request.parentContact}</p>
+
+                  <p className="text-sm text-muted-foreground">Parent Contact</p>
+                  <p className="font-medium">{request.parentContact || "Not provided"}</p>
                 </div>
               </div>
               <div className="mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Reason for Leave
-                </p>
-                <p className="text-sm mt-1">{request.reason}</p>
+                <p className="text-sm text-muted-foreground">Reason for Leave</p>
+                <p className="text-sm mt-1">{request.reason || "No reason provided"}</p>
               </div>
+              {request.status === "rejected" && request.rejectionReason && (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground">Rejection Reason</p>
+                  <p className="text-sm mt-1 text-red-600">{request.rejectionReason}</p>
+                </div>
+              )}
               <div className="mt-4">
                 <p className="text-sm text-muted-foreground">Requested on</p>
                 <p className="text-sm">{formatTimestamp(request.createdAt)}</p>
@@ -233,7 +254,6 @@ export const WardenRequestList = ({ requests }: WardenRequestListProps) => {
               </Button>
             </CardFooter>
 
-            {/* Reject Dialog */}
             <Dialog
               open={openDialog === `reject-${request.id}`}
               onOpenChange={(open) => !open && setOpenDialog(null)}
