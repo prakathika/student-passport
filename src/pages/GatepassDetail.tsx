@@ -36,13 +36,14 @@ const GatepassDetail = () => {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
+          const gatepassData = docSnap.data();
           const data = {
             id: docSnap.id,
-            ...docSnap.data()
+            ...gatepassData
           };
           
           // Verify user can access this gatepass
-          if (userData?.role === "student" && data.studentId && currentUser?.uid !== data.studentId) {
+          if (userData?.role === "student" && gatepassData.studentId && currentUser?.uid !== gatepassData.studentId) {
             toast({
               title: "Access denied",
               description: "You do not have permission to view this gate pass.",
@@ -68,6 +69,11 @@ const GatepassDetail = () => {
           description: error.message,
           variant: "destructive",
         });
+        
+        // If we get a NOT_FOUND error, navigate to home
+        if (error.code === "NOT_FOUND") {
+          navigate("/");
+        }
       } finally {
         setIsLoading(false);
       }
